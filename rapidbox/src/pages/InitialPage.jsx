@@ -1,10 +1,16 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import logo from "../assets/logo.svg";
 
 const InitialPage = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setTimeout(() => {
+      navigate("/solving"); // Redirect to SolvingPage component
+    }, 5000);
+  }, [navigate]);
 
   const handleStartClick = () => {
     // Redirect to Solving Page after 5 seconds
