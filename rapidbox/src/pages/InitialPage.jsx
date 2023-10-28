@@ -1,13 +1,15 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+
 import logo from "../assets/logo.svg";
 
-function InitialPage() {
-  function handleStartClick() {
-    // Redirect to Solving Page after 5 seconds (or handle it with React Router).
-    setTimeout(() => {
-      // Redirect logic
-    }, 5000);
-  }
+const InitialPage = () => {
+  const navigate = useNavigate();
+
+  const handleStartClick = () => {
+    // Redirect to Solving Page after 5 seconds
+    navigate("/solving"); // Redirect to SolvingPage component
+  };
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
@@ -26,6 +28,6 @@ function InitialPage() {
       </button>
     </div>
   );
-}
+};
 
 export default InitialPage;
