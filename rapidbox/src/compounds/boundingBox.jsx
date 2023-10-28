@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 const BoundingBox = ({ id, left, top, width, height, onMove, onResize }) => {
+  const boxRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
   const [isResizing, setIsResizing] = useState(false);
-  const resizeSensitivity = 0.5; // Adjust this factor for smoother resizing
+  const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -13,57 +14,88 @@ const BoundingBox = ({ id, left, top, width, height, onMove, onResize }) => {
     } else {
       setIsDragging(true);
     }
-    setStartPosition({ x: e.clientX, y: e.clientY });
+    setStartX(e.clientX);
+    setStartY(e.clientY);
+  };
+
+  const handleMouseMove = (e) => {
+    if (isDragging) {
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+      onMove(left + deltaX, top + deltaY);
+      setStartX(e.clientX);
+      setStartY(e.clientY);
+    } else if (isResizing) {
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+      onResize(width + deltaX, height + deltaY);
+      setStartX(e.clientX);
+      setStartY(e.clientY);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setIsResizing(false);
   };
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (isDragging) {
-        const deltaX = e.clientX - startPosition.x;
-        const deltaY = e.clientY - startPosition.y;
-        const newLeft = left + deltaX;
-        const newTop = top + deltaY;
-        onMove(newLeft, newTop);
-        setStartPosition({ x: e.clientX, y: e.clientY });
-      } else if (isResizing) {
-        const deltaX = e.clientX - startPosition.x;
-        const deltaY = e.clientY - startPosition.y;
-        const newWidth = width + deltaX * resizeSensitivity;
-        const newHeight = height + deltaY * resizeSensitivity;
-        onResize(newWidth, newHeight);
-        setStartPosition({ x: e.clientX, y: e.clientY });
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      setIsResizing(false);
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    if (isDragging || isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    }
 
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [
-    isDragging,
-    isResizing,
-    left,
-    top,
-    width,
-    height,
-    onMove,
-    onResize,
-    startPosition,
-  ]);
+  }, [isDragging, isResizing]);
+
+  const handleTouchStart = (event) => {
+    event.preventDefault();
+    const touch = event.touches[0];
+    setStartX(touch.clientX);
+    setStartY(touch.clientY);
+    if (event.target.classList.contains("resizable-handle")) {
+      setIsResizing(true);
+    } else {
+      setIsDragging(true);
+    }
+  };
+
+  const handleTouchMove = (event) => {
+    event.preventDefault();
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - startX;
+    const deltaY = touch.clientY - startY;
+    if (isDragging) {
+      onMove(left + deltaX, top + deltaY);
+    } else if (isResizing) {
+      onResize(width + deltaX, height + deltaY);
+    }
+    setStartX(touch.clientX);
+    setStartY(touch.clientY);
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    setIsResizing(false);
+  };
 
   return (
     <div
-      className="bounding-box absolute border-2 border-yellow-400 "
-      style={{ left, top, width, height, cursor: "move" }}
+      ref={boxRef}
+      className="bounding-box"
+      style={{
+        left: left + "px",
+        top: top + "px",
+        width: width + "px",
+        height: height + "px",
+      }}
       onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       <div
         className="resizable-handle"
