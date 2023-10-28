@@ -16,3 +16,16 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.bounding-box {
+  position: absolute;
+  border: 1px solid red;
+  box-sizing: border-box;
+  cursor: move;
+}
+
+.parent-container {
+  position: relative; /* or position: absolute; */
+  /* Other styles */
+}
+/* Add styles for the image */
